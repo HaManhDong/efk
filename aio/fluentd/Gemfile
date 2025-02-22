@@ -1,0 +1,8 @@
+source 'https://rubygems.org'
+gem 'json', '2.7.4'
+gem 'faraday', '2.12.1'
+gem 'fluent-config-regexp-type'
+gem 'fluent-plugin-multi-format-parser'
+gem 'fluent-plugin-elasticsearch'
+gem 'fluent-plugin-rewrite-tag-filter'
+gem 'elasticsearch', '8.17'
