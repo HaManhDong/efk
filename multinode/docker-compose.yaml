@@ -1,0 +1,143 @@
+version: '2'
+services:
+  web:
+    image: httpd
+    network_mode: host
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+        tag: httpd.access
+    depends_on:
+      - fluentd
+
+  fluentd:
+    build: ./fluentd
+    volumes:
+      - ./fluentd/conf:/fluentd/etc
+    network_mode: host
+
+  es01:
+    image: elasticsearch:8.17.2
+    container_name: es01
+    environment:
+      - node.name=es01
+      - discovery.seed_hosts=es01,es02,es03
+      - cluster.initial_master_nodes=es01,es02,es03
+      - cluster.name=demo-es
+      - bootstrap.memory_lock=true
+      - node.roles=master,data
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65535
+        hard: 65535
+    volumes:
+      - type: volume
+        source: esdata01
+        target: /usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+    networks:
+      - esnet
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+  es02:
+    image: elasticsearch:8.17.2
+    container_name: es02
+    environment:
+      - node.name=es02
+      - discovery.seed_hosts=es01,es02,es03
+      - cluster.initial_master_nodes=es01,es02,es03
+      - cluster.name=demo-es
+      - bootstrap.memory_lock=true
+      - node.roles=master,data
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65535
+        hard: 65535
+    volumes:
+      - type: volume
+        source: esdata02
+        target: /usr/share/elasticsearch/data
+    ports:
+      - 9201:9200
+    networks:
+      - esnet
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+    depends_on:
+      - es01
+  es03:
+    image: elasticsearch:8.17.2
+    container_name: es03
+    environment:
+      - node.name=es03
+      - discovery.seed_hosts=es01,es02,es03
+      - cluster.initial_master_nodes=es01,es02,es03
+      - cluster.name=demo-es
+      - bootstrap.memory_lock=true
+      - node.roles=master,data
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65535
+        hard: 65535
+    volumes:
+      - type: volume
+        source: esdata03
+        target: /usr/share/elasticsearch/data
+    ports:
+      - 9202:9200
+    networks:
+      - esnet
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+    depends_on:
+      - es01
+      - es02
+  kibana:
+    image: kibana:8.17.2
+    ports:
+      - 5601:5601
+    networks:
+      - esnet
+    environment:
+      ELASTICSEARCH_HOSTS: '["http://es01:9200","http://es02:9202","http://es03:9203"]'
+    depends_on:
+      - es01
+      - es02
+      - es03
+volumes:
+  esdata01:
+    driver: local
+  esdata02:
+    driver: local
+  esdata03:
+    driver: local
+
+networks:
+  esnet:
+    driver: bridge
