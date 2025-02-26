@@ -1,0 +1,28 @@
+2025-02-26 07:27:33 [main] INFO  Main - Start
+2025-02-26 07:27:33 [main] ERROR Main - Exception
+javax.management.RuntimeErrorException: null
+    at Main.main(Main.java:16) ~[bin/:na]
+2025-02-26 07:27:33 [main] INFO  Main - End
+2025-02-26 07:27:33 [main] INFO  Main - Start 2
+2025-02-26 07:27:33 [main] INFO  Main - Start 3
+2025-02-26 07:27:33 [main] INFO  Main - Start 4
+2025-02-26 07:27:33 [main] INFO  Main - Start 5
+2025-02-26 07:27:33 [main] INFO  Main - Start 6
+2025-02-26 07:27:33 [main] INFO  Main - Start 7
+2025-02-26 07:27:33 [main] INFO  Main - Start 8
+2025-02-26 07:27:33 [main] INFO  Main - Start 9
+2025-02-26 07:27:33 [main] INFO  Main - Start 9
+2025-02-26 07:27:33 [main] INFO  Main - Start 10
+2025-02-26 07:27:33 [main] INFO  Main - Start
+2025-02-26 07:27:33 [main] ERROR Main - Exception
+javax.management.RuntimeErrorException: null
+    at Main.main(Main.java:16) ~[bin/:na]
+2025-02-26 07:27:33 [main] INFO  Main - End
+2025-02-26 07:27:33 [main] ERROR Main - Exception
+javax.management.RuntimeErrorException: null
+    at Main.main(Main.java:16) ~[bin/:na]
+2025-02-26 07:27:33 [main] INFO  Main - End
+2025-02-26 07:27:33 [main] ERROR Main - Exception
+javax.management.RuntimeErrorException: null
+    at Main.main(Main.java:16) ~[bin/:na]
+2025-02-26 07:27:33 [main] INFO  Main - End

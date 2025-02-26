@@ -1,20 +1,22 @@
 version: '2'
 services:
-  web:
-    image: httpd
-    network_mode: host
-    logging:
-      driver: "fluentd"
-      options:
-        fluentd-address: localhost:24224
-        tag: httpd.access
-    depends_on:
-      - fluentd
+  # web:
+  #   image: httpd
+  #   network_mode: host
+  #   logging:
+  #     driver: "fluentd"
+  #     options:
+  #       fluentd-address: localhost:24224
+  #       tag: httpd.access
+  #   depends_on:
+  #     - fluentd
 
   fluentd:
     build: ./fluentd
     volumes:
       - ./fluentd/conf:/fluentd/etc
+      - /home/donghm/Desktop/efk-master/aio/app.log:/app.log
+      - /home/donghm/Desktop/efk-master/aio/app.log.pos:/app.log.pos
     network_mode: host
 
   elasticsearch:
