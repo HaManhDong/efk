@@ -118,6 +118,44 @@ services:
     depends_on:
       - es01
       - es02
+
+  es04:
+    image: elasticsearch:8.17.2
+    container_name: es04
+    environment:
+      - node.name=es04
+      - discovery.seed_hosts=es01,es02,es03
+      - cluster.initial_master_nodes=es01,es02,es03
+      - cluster.name=demo-es
+      - bootstrap.memory_lock=true
+      - node.roles=data
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65535
+        hard: 65535
+    volumes:
+      - type: volume
+        source: esdata04
+        target: /usr/share/elasticsearch/data
+    ports:
+      - 9203:9200
+    networks:
+      - esnet
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+    depends_on:
+      - es01
+      - es02
+      - es03
+
   kibana:
     image: kibana:8.17.2
     ports:
@@ -125,7 +163,7 @@ services:
     networks:
       - esnet
     environment:
-      ELASTICSEARCH_HOSTS: '["http://es01:9200","http://es02:9202","http://es03:9203"]'
+      ELASTICSEARCH_HOSTS: '["http://es01:9200","http://es02:9200","http://es03:9200"]'
     depends_on:
       - es01
       - es02
@@ -136,6 +174,8 @@ volumes:
   esdata02:
     driver: local
   esdata03:
+    driver: local
+  esdata04:
     driver: local
 
 networks:
