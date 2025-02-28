@@ -1,15 +1,15 @@
 version: '2'
 services:
-  web:
-    image: httpd
-    network_mode: host
-    logging:
-      driver: "fluentd"
-      options:
-        fluentd-address: localhost:24224
-        tag: httpd.access
-    depends_on:
-      - fluentd
+  # web:
+  #   image: httpd
+  #   network_mode: host
+  #   logging:
+  #     driver: "fluentd"
+  #     options:
+  #       fluentd-address: localhost:24224
+  #       tag: httpd.access
+  #   depends_on:
+  #     - fluentd
 
   fluentd:
     build: ./fluentd
@@ -119,55 +119,87 @@ services:
       - es01
       - es02
 
-  es04:
-    image: elasticsearch:8.17.2
-    container_name: es04
-    environment:
-      - node.name=es04
-      - discovery.seed_hosts=es01,es02,es03
-      - cluster.initial_master_nodes=es01,es02,es03
-      - cluster.name=demo-es
-      - bootstrap.memory_lock=true
-      - node.roles=data
-      - xpack.security.enabled=false
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-      nofile:
-        soft: 65535
-        hard: 65535
+  # es04:
+  #   image: elasticsearch:8.17.2
+  #   container_name: es04
+  #   environment:
+  #     - node.name=es04
+  #     - discovery.seed_hosts=es01,es02,es03
+  #     - cluster.initial_master_nodes=es01,es02,es03
+  #     - cluster.name=demo-es
+  #     - bootstrap.memory_lock=true
+  #     - node.roles=data
+  #     - xpack.security.enabled=false
+  #     - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+  #   ulimits:
+  #     memlock:
+  #       soft: -1
+  #       hard: -1
+  #     nofile:
+  #       soft: 65535
+  #       hard: 65535
+  #   volumes:
+  #     - type: volume
+  #       source: esdata04
+  #       target: /usr/share/elasticsearch/data
+  #   ports:
+  #     - 9203:9200
+  #   networks:
+  #     - esnet
+  #   logging:
+  #     driver: "json-file"
+  #     options:
+  #       max-size: "10m"
+  #       max-file: "5"
+  #   depends_on:
+  #     - es01
+  #     - es02
+  #     - es03
+
+  elastalert2-server:
+    container_name: elastalert2-server
+    hostname: elastalert2-server
+    restart: unless-stopped
+    image:  karql/elastalert2-server:5.12.0
     volumes:
-      - type: volume
-        source: esdata04
-        target: /usr/share/elasticsearch/data
-    ports:
-      - 9203:9200
+      - ./elastalert2/elastalert.yaml:/opt/elastalert/config.yaml
+      - ./elastalert2/elastalert-test.yaml:/opt/elastalert/config-test.yaml
+      - ./elastalert2/config.json:/opt/elastalert-server/config/config.json
+      - ./elastalert2/rules:/opt/elastalert/rules
+      - ./elastalert2/rule_templates:/opt/elastalert/rule_templates
     networks:
       - esnet
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "5"
+    ports:
+      - 0.0.0.0:3030:3030
+      - 0.0.0.0:3333:3333
+    depends_on:
+      - alertmanager
+
+  kibana:
+    image: kibana:8.17.0_elastalert2
+    network_mode: host
+    environment:
+      ELASTICSEARCH_HOSTS: '["http://localhost:9200","http://localhost:9201","http://localhost:9202"]'
     depends_on:
       - es01
       - es02
       - es03
 
-  kibana:
-    image: kibana:8.17.2
-    ports:
-      - 5601:5601
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: alertmanager
+    restart: unless-stopped
+    volumes:
+      - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+      - alertmanager_data:/alertmanager
+    command:
+      - "--config.file=/etc/alertmanager/alertmanager.yml"
+      - "--storage.path=/alertmanager"
     networks:
       - esnet
-    environment:
-      ELASTICSEARCH_HOSTS: '["http://es01:9200","http://es02:9200","http://es03:9200"]'
-    depends_on:
-      - es01
-      - es02
-      - es03
+    ports:
+      - 0.0.0.0:9093:9093
+
 volumes:
   esdata01:
     driver: local
@@ -176,6 +208,8 @@ volumes:
   esdata03:
     driver: local
   esdata04:
+    driver: local
+  alertmanager_data:
     driver: local
 
 networks:

@@ -1,0 +1,42 @@
+# Rule name, must be unique
+name: "[Elastalert2] Syslog ERROR log"
+type: "frequency"
+index: "syslog*"
+is_enabled: true
+
+# Alert when this many documents matching the query occur within a timeframe
+num_events: 1
+
+# num_events must occur within this amount of time to trigger an alert
+timeframe:
+  minutes: 60
+
+realert:
+  minutes: 1
+
+timestamp_field: "@timestamp"
+timestamp_type: "iso"
+use_strftime_index: false
+
+filter:
+  - query:
+      query_string:
+        query: "@log_name: *.warn"
+
+alert:
+  - "alertmanager"
+alertmanager_hosts:
+  - "http://alertmanager:9093"
+alertmanager_api_version: "v2"
+alert_subject: "Syslog {0} on node {1} ERROR log"
+alert_subject_args:
+- tag
+- hostaddress
+alertmanager_annotations:
+  severity: "critical"
+alertmanager_labels:
+  source: "elastalert2"
+  group: "demo"
+alertmanager_fields:
+  msg: "message"
+  log: "@log_name"
